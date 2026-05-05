@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -29,6 +29,34 @@ export class CommentService {
       include: {
         user: true
       }
+    });
+  }
+
+  findOne(id: number) {
+    return this.prisma.comment.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        kos: true
+      }
+    });
+  }
+
+  update(id: number, data: any) {
+    return this.prisma.comment.update({
+      where: { id },
+      data: {
+        content: data.content
+      }
+    });
+  }
+
+  async remove(id: number) {
+    const existing = await this.prisma.comment.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Comment tidak ditemukan');
+
+    return this.prisma.comment.delete({
+      where: { id }
     });
   }
 }

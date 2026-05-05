@@ -29,8 +29,22 @@ export class KosService {
       include: {
         rooms: true,
         facilities: true,
-        comments: true
+        comments: true,
+        owner: true
       }
+    });
+  }
+
+  update(id: number, data: any) {
+    return this.prisma.kos.update({
+      where: { id },
+      data
+    });
+  }
+
+  remove(id: number) {
+    return this.prisma.kos.delete({
+      where: { id }
     });
   }
 }
