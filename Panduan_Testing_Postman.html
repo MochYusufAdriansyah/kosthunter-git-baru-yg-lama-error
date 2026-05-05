@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Testing CRUD Sistem Kos - KostHunter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 40px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        h1 {
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .endpoint {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 10px 15px;
+            margin: 10px 0;
+        }
+        .method {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .success {
+            color: #27ae60;
+        }
+        .warning {
+            color: #f39c12;
+        }
+        .error {
+            color: #e74c3c;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .phase {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .phase h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <h1>📋 Panduan Testing CRUD Sistem Kos - KostHunter</h1>
+
+    <div class="phase">
+        <h2>📋 Informasi Proyek</h2>
+        <ul>
+            <li><strong>Nama Proyek:</strong> Sistem Kos (KostHunter)</li>
+            <li><strong>Framework:</strong> NestJS + Prisma + MySQL</li>
+            <li><strong>Tanggal:</strong> May 5, 2026</li>
+            <li><strong>Developer:</strong> Moch Yusuf Adriansyah</li>
+        </ul>
+    </div>
+
+    <h2>🚀 Persiapan Testing</h2>
+
+    <h3>1. Jalankan Server</h3>
+    <div class="code-block">
+cd c:\Users\LENOVO\Documents\Sistemkos1<br>
+npm run start:dev
+    </div>
+    <p>Server akan berjalan di: <code>http://localhost:3000</code></p>
+
+    <h3>2. Setup Postman</h3>
+    <ul>
+        <li>Import collection atau buat request manual</li>
+        <li>Base URL: <code>http://localhost:3000</code></li>
+        <li>Untuk endpoint yang butuh auth, gunakan header:</li>
+    </ul>
+    <div class="code-block">
+Authorization: Bearer &lt;access_token&gt;
+    </div>
+
+    <h2>👥 Role dalam Sistem</h2>
+
+    <h3>OWNER (Pemilik Kos)</h3>
+    <ul>
+        <li>Bisa membuat dan mengelola kos</li>
+        <li>Mengelola room dan fasilitas</li>
+        <li>Melihat booking dan komentar</li>
+        <li>Membalas komentar penyewa</li>
+    </ul>
+
+    <h3>SOCIETY (Penyewa)</h3>
+    <ul>
+        <li>Bisa melihat kos yang tersedia</li>
+        <li>Booking room</li>
+        <li>Memberikan komentar dan ulasan</li>
+    </ul>
+
+    <h2>📚 Panduan Testing Lengkap</h2>
+
+    <div class="phase">
+        <h3>PHASE 1: Setup Data Awal</h3>
+
+        <h4>1.1 Buat User OWNER</h4>
+        <div class="endpoint">
+            <span class="method">POST</span> <code>http://localhost:3000/users</code><br>
+            <strong>Body:</strong>
+            <div class="code-block">
+{<br>
+  "name": "Pak Budi Owner",<br>
+  "email": "owner@example.com",<br>
+  "password": "owner123",<br>
+  "role": "OWNER"<br>
+}
+            </div>
+        </div>
+
+        <h4>1.2 Buat User SOCIETY</h4>
+        <div class="endpoint">
+            <span class="method">POST</span> <code>http://localhost:3000/users</code><br>
+            <strong>Body:</strong>
+            <div class="code-block">
+{<br>
+  "name": "Andi Mahasiswa",<br>
+  "email": "andi@example.com",<br>
+  "password": "andi123",<br>
+  "role": "SOCIETY"<br>
+}
+            </div>
+        </div>
+
+        <h4>1.3 Login sebagai OWNER</h4>
+        <div class="endpoint">
+            <span class="method">POST</span> <code>http://localhost:3000/auth/login</code><br>
+            <strong>Body:</strong>
+            <div class="code-block">
+{<br>
+  "email": "owner@example.com",<br>
+  "password": "owner123"<br>
+}
+            </div>
+        </div>
+        <p class="warning">Simpan <code>access_token</code> untuk digunakan selanjutnya</p>
+
+        <h4>1.4 Login sebagai SOCIETY</h4>
+        <div class="endpoint">
+            <span class="method">POST</span> <code>http://localhost:3000/auth/login</code><br>
+            <strong>Body:</strong>
+            <div class="code-block">
+{<br>
+  "email": "andi@example.com",<br>
+  "password": "andi123"<br>
+}
+            </div>
+        </div>
+        <p class="warning">Simpan <code>access_token</code> untuk SOCIETY</p>
+    </div>
+
+    <div class="phase">
+        <h3>PHASE 2: Testing CRUD OWNER</h3>
+
+        <h4>2.1 OWNER Membuat Kos</h4>
+        <div class="endpoint">
+            <span class="method">POST</span> <code>http://localhost:3000/kos</code><br>
+            <strong>Header:</strong> Authorization: Bearer &lt;OWNER_TOKEN&gt;<br>
+            <strong>Body:</strong>
+            <div class="code-block">
+{<br>
+  "name": "Kos Pak Budi Premium",<br>
+  "address": "Jl. Sudirman No. 123, Jakarta",<br>
+  "gender": "Campur",<br>
+  "price": 750000,<br>
+  "ownerId": 1<br>
+}
+            </div>
+        </div>
+
+        <h4>2.2 OWNER Melihat Semua Kos</h4>
+        <div class="endpoint">
+            <span class="method">GET</span> <code>http://localhost:3000/kos</code>
+        </div>
+
+        <h4>2.3 OWNER Melihat Detail Kos</h4>
+        <div class="endpoint">
+            <span class="method">GET</span> <code>http://localhost:3000/kos/1</code>
+        </div>
+
+        <h4>2.4 OWNER Update Kos</h4>
+        <div class="endpoint">
+            <span class="method">PATCH</span> <code>http://localhost:3000/kos/1</code><br>
+            <strong>Header:</strong> Authorization: Bearer &lt;OWNER_TOKEN&gt;<br>
+            <strong>Body:</strong>
+            <div class="code-block">
+{<br>
+  "price": 800000,<br>
+  "name": "Kos Pak Budi Premium Updated"<br>
+}
+            </div>
+        </div>
+
+        <h4>2.5 OWNER Membuat Room</h4>
+        <div class="endpoint">
+            <span class="method">POST</span> <code>http://localhost:3000/room</code><br>
+            <strong>Body:</strong>
+            <div class="code-block">
+{<br>
+  "number": "A-101",<br>
+  "status": "AVAILABLE",<br>
+  "kosId": 1<br>
+}
+            </div>
+        </div>
+
+        <h4>2.6 OWNER Melihat Room di Kosnya</h4>
+        <div class="endpoint">
+            <span class="method">GET</span> <code>http://localhost:3000/room/kos/1</code>
+        </div>
+
+        <h4>2.7 OWNER Update Room</h4>
+        <div class="endpoint">
+            <span class="method">PATCH</span> <code>http://localhost:3000/room/1</code><br>
+            <strong>Body:</strong>
+            <div class="code-block">
+{<br>
+  "status": "AVAILABLE",<br>
+  "number": "A-102"<br>
+}
+            </div>
+        </div>
+    </div>
+
+    <div class="phase">
+        <h3>PHASE 3: Testing CRUD SOCIETY</h3>
+
+        <h4>3.1 SOCIETY Melihat Kos Tersedia</h4>
+        <div class="endpoint">
+            <span class="method">GET</span> <code>http://localhost:3000/kos</code>
+        </div>
+
+        <h4>3.2 SOCIETY Melihat Detail Kos</h4>
+        <div class="endpoint">
+            <span class="method">GET</span> <code>http://localhost:3000/kos/1</code>
+        </div>
+
+        <h4>3.3 SOCIETY Booking Room</h4>
+        <div class="endpoint">
+            <span class="method">POST</span> <code>http://localhost:3000/booking</code><br>
+            <strong>Header:</strong> Authorization: Bearer &lt;SOCIETY_TOKEN&gt;<br>
+            <strong>Body:</strong>
+            <div class="code-block">
+{<br>
+  "roomId": 1<br>
+}
+            </div>
+        </div>
+
+        <h4>3.4 SOCIETY Melihat Booking Sendiri</h4>
+        <div class="endpoint">
+            <span class="method">GET</span> <code>http://localhost:3000/booking/me</code><br>
+            <strong>Header:</strong> Authorization: Bearer &lt;SOCIETY_TOKEN&gt;
+        </div>
+
+        <h4>3.5 SOCIETY Memberikan Komentar</h4>
+        <div class="endpoint">
+            <span class="method">POST</span> <code>http://localhost:3000/comment</code><br>
+            <strong>Header:</strong> Authorization: Bearer &lt;SOCIETY_TOKEN&gt;<br>
+            <strong>Body:</strong>
+            <div class="code-block">
+{<br>
+  "content": "Kosnya bersih dan nyaman, recommended!",<br>
+  "kosId": 1<br>
+}
+            </div>
+        </div>
+
+        <h4>3.6 SOCIETY Melihat Komentar di Kos</h4>
+        <div class="endpoint">
+            <span class="method">GET</span> <code>http://localhost:3000/comment/kos/1</code>
+        </div>
+
+        <h4>3.7 SOCIETY Update Komentar</h4>
+        <div class="endpoint">
+            <span class="method">PATCH</span> <code>http://localhost:3000/comment/1</code><br>
+            <strong>Header:</strong> Authorization: Bearer &lt;SOCIETY_TOKEN&gt;<br>
+            <strong>Body:</strong>
+            <div class="code-block">
+{<br>
+  "content": "Kosnya sangat recommended untuk mahasiswa!"<br>
+}
+            </div>
+        </div>
+    </div>
+
+    <div class="phase">
+        <h3>PHASE 4: Testing OWNER Response</h3>
+
+        <h4>4.1 OWNER Melihat Komentar</h4>
+        <div class="endpoint">
+            <span class="method">GET</span> <code>http://localhost:3000/comment/kos/1</code>
+        </div>
+
+        <h4>4.2 OWNER Membalas Komentar</h4>
+        <div class="endpoint">
+            <span class="method">PATCH</span> <code>http://localhost:3000/comment/1/reply</code><br>
+            <strong>Header:</strong> Authorization: Bearer &lt;OWNER_TOKEN&gt;<br>
+            <strong>Body:</strong>
+            <div class="code-block">
+{<br>
+  "reply": "Terima kasih atas ulasannya. Kami senang Anda nyaman di kos kami."<br>
+}
+            </div>
+        </div>
+    </div>
+
+    <div class="phase">
+        <h3>PHASE 5: Testing Delete Operations</h3>
+
+        <h4>5.1 SOCIETY Hapus Komentar</h4>
+        <div class="endpoint">
+            <span class="method">DELETE</span> <code>http://localhost:3000/comment/1</code><br>
+            <strong>Header:</strong> Authorization: Bearer &lt;SOCIETY_TOKEN&gt;
+        </div>
+
+        <h4>5.2 SOCIETY Cancel Booking</h4>
+        <div class="endpoint">
+            <span class="method">DELETE</span> <code>http://localhost:3000/booking/1</code><br>
+            <strong>Header:</strong> Authorization: Bearer &lt;SOCIETY_TOKEN&gt;
+        </div>
+
+        <h4>5.3 OWNER Hapus Room</h4>
+        <div class="endpoint">
+            <span class="method">DELETE</span> <code>http://localhost:3000/room/1</code>
+        </div>
+
+        <h4>5.4 OWNER Hapus Kos</h4>
+        <div class="endpoint">
+            <span class="method">DELETE</span> <code>http://localhost:3000/kos/1</code>
+        </div>
+    </div>
+
+    <h2>📊 Endpoint Summary</h2>
+
+    <h3>Users</h3>
+    <table>
+        <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        <tr><td>POST</td><td>/users</td><td>Create user</td></tr>
+        <tr><td>GET</td><td>/users</td><td>Get all users</td></tr>
+        <tr><td>GET</td><td>/users/:id</td><td>Get user by ID</td></tr>
+        <tr><td>PATCH</td><td>/users/:id</td><td>Update user</td></tr>
+        <tr><td>DELETE</td><td>/users/:id</td><td>Delete user</td></tr>
+    </table>
+
+    <h3>Auth</h3>
+    <table>
+        <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        <tr><td>POST</td><td>/auth/login</td><td>Login user</td></tr>
+    </table>
+
+    <h3>Kos</h3>
+    <table>
+        <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        <tr><td>POST</td><td>/kos</td><td>Create kos</td></tr>
+        <tr><td>GET</td><td>/kos</td><td>Get all kos</td></tr>
+        <tr><td>GET</td><td>/kos/:id</td><td>Get kos by ID</td></tr>
+        <tr><td>PATCH</td><td>/kos/:id</td><td>Update kos</td></tr>
+        <tr><td>DELETE</td><td>/kos/:id</td><td>Delete kos</td></tr>
+    </table>
+
+    <h3>Room</h3>
+    <table>
+        <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        <tr><td>POST</td><td>/room</td><td>Create room</td></tr>
+        <tr><td>GET</td><td>/room</td><td>Get all rooms</td></tr>
+        <tr><td>GET</td><td>/room/:id</td><td>Get room by ID</td></tr>
+        <tr><td>GET</td><td>/room/kos/:id</td><td>Get rooms by kos</td></tr>
+        <tr><td>PATCH</td><td>/room/:id</td><td>Update room</td></tr>
+        <tr><td>DELETE</td><td>/room/:id</td><td>Delete room</td></tr>
+    </table>
+
+    <h3>Comment</h3>
+    <table>
+        <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        <tr><td>POST</td><td>/comment</td><td>Create comment (auth required)</td></tr>
+        <tr><td>GET</td><td>/comment/:id</td><td>Get comment by ID</td></tr>
+        <tr><td>PATCH</td><td>/comment/:id</td><td>Update comment (auth required)</td></tr>
+        <tr><td>PATCH</td><td>/comment/:id/reply</td><td>Reply comment</td></tr>
+        <tr><td>DELETE</td><td>/comment/:id</td><td>Delete comment (auth required)</td></tr>
+        <tr><td>GET</td><td>/comment/kos/:id</td><td>Get comments by kos</td></tr>
+    </table>
+
+    <h3>Booking</h3>
+    <table>
+        <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+        <tr><td>POST</td><td>/booking</td><td>Create booking (auth required)</td></tr>
+        <tr><td>GET</td><td>/booking/me</td><td>Get my bookings (auth required)</td></tr>
+        <tr><td>DELETE</td><td>/booking/:id</td><td>Cancel booking (auth required)</td></tr>
+    </table>
+
+    <h2>✅ Checklist Testing</h2>
+
+    <h3>Setup</h3>
+    <ul>
+        <li>[ ] Server running di localhost:3000</li>
+        <li>[ ] Database connected</li>
+        <li>[ ] Postman ready</li>
+    </ul>
+
+    <h3>User Management</h3>
+    <ul>
+        <li>[ ] Create OWNER user</li>
+        <li>[ ] Create SOCIETY user</li>
+        <li>[ ] Login OWNER</li>
+        <li>[ ] Login SOCIETY</li>
+    </ul>
+
+    <h3>Kos CRUD (OWNER)</h3>
+    <ul>
+        <li>[ ] Create kos</li>
+        <li>[ ] Read all kos</li>
+        <li>[ ] Read kos by ID</li>
+        <li>[ ] Update kos</li>
+        <li>[ ] Delete kos</li>
+    </ul>
+
+    <h3>Room CRUD (OWNER)</h3>
+    <ul>
+        <li>[ ] Create room</li>
+        <li>[ ] Read all rooms</li>
+        <li>[ ] Read room by ID</li>
+        <li>[ ] Read rooms by kos</li>
+        <li>[ ] Update room</li>
+        <li>[ ] Delete room</li>
+    </ul>
+
+    <h3>Comment CRUD</h3>
+    <ul>
+        <li>[ ] SOCIETY create comment</li>
+        <li>[ ] Read comment by ID</li>
+        <li>[ ] SOCIETY update comment</li>
+        <li>[ ] OWNER reply comment</li>
+        <li>[ ] SOCIETY delete comment</li>
+        <li>[ ] Read comments by kos</li>
+    </ul>
+
+    <h3>Booking CRUD</h3>
+    <ul>
+        <li>[ ] SOCIETY create booking</li>
+        <li>[ ] SOCIETY read my bookings</li>
+        <li>[ ] SOCIETY cancel booking</li>
+    </ul>
+
+    <h2>🔧 Troubleshooting</h2>
+
+    <h3>Error 401 Unauthorized</h3>
+    <ul>
+        <li>Pastikan menggunakan token yang benar</li>
+        <li>Token mungkin expired, login ulang</li>
+    </ul>
+
+    <h3>Error 404 Not Found</h3>
+    <ul>
+        <li>Periksa ID yang digunakan</li>
+        <li>Pastikan data sudah dibuat sebelumnya</li>
+    </ul>
+
+    <h3>Error 400 Bad Request</h3>
+    <ul>
+        <li>Periksa format JSON body</li>
+        <li>Pastikan required fields terisi</li>
+    </ul>
+
+    <h3>Database Error</h3>
+    <ul>
+        <li>Pastikan MySQL server running</li>
+        <li>Periksa DATABASE_URL di .env</li>
+    </ul>
+
+    <h2>📞 Support</h2>
+    <p>Jika ada pertanyaan atau error, hubungi developer:</p>
+    <ul>
+        <li><strong>Email:</strong> moch.yusuf@example.com</li>
+        <li><strong>Repository:</strong> <a href="https://github.com/MochYusufAdriansyah/kosthunter-git-baru-yg-lama-error">https://github.com/MochYusufAdriansyah/kosthunter-git-baru-yg-lama-error</a></li>
+    </ul>
+
+    <p><em>Dokumen ini dibuat untuk keperluan testing dan dokumentasi proyek Sistem Kos - KostHunter</em></p>
+</body>
+</html>
